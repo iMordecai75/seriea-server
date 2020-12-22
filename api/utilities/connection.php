@@ -1,7 +1,7 @@
 <?php
 class Connection {
 
-    static $apiurl = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-json';
+    static $apiurl = 'https://raw.githubusercontent.com/openfootball/football.json/master';
 
     static function cURLdownload($endpoint, $url = null)
     {
