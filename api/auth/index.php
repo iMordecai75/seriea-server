@@ -91,17 +91,16 @@ class ApiAuth extends Api
                 }
                 break;
             case 'PATCH':
-                $token = getBearerToken();
-                if (empty($token)) {
+                if (empty($this->token)) {
                     $this->response->msg = 'Token mancante';
                     $this->response->error = 1;
 
                     echo $this->response->toJson();
                 } else {
                     try {
-                        $query = "UPDATE tblUsers SET User_sToken = '' WHERE User_sToken = ?";
+                        $query = "UPDATE tblUsers SET User_sToken='' WHERE User_sToken=?";
                         $stmt = $this->dbh->prepare($query);
-                        $stmt->execute([$token]);
+                        $stmt->execute([$this->token]);
 
                         $this->response->status = 'OK';
 
