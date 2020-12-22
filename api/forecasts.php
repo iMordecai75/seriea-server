@@ -22,7 +22,11 @@ class ApiForecasts extends Api
     {
         $user = null;
         if (empty($this->token)) {
-            $this->method = 'GET';
+            $this->response->status = 'KO';
+            $this->response->msg = 'Token assente';
+
+            echo $this->response->toJson();
+            exit;            
         } else {            
             try {                
                 $query = "SELECT User_iId FROM tblUsers WHERE User_sToken = ?";
@@ -48,7 +52,23 @@ class ApiForecasts extends Api
         switch ($this->method) {
             case 'GET':
                 try {
-                    echo 'Token Assente';
+                    $query = "SELECT Forecast_iPosition, Forecast_sTeam FROM tblForecasts WHERE User_iId = ? ORDER BY Forecast_iPosition";
+                    try {
+                        $stmt = $this->dbh->prepare($query);
+                        $stmt->execute([$user['User_iId']]);
+                        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        $this->response->status = 'OK';
+                        $this->response->items = $rows;
+
+                        echo $this->response->toJson();
+                        exit;
+                    } catch (\Throwable $th) {
+                        $this->response->status = 'KO';
+                        $this->response->msg = $th->getMessage();
+
+                        echo $this->response->toJson();
+                        exit;
+                    }                    
                 } catch (\Throwable $th) {
                     $this->response->status = 'KO';
                     $this->response->msg = $th->getMessage();
@@ -118,5 +138,4 @@ try {
 
     echo $this->response->toJson();
     die();
-
 }

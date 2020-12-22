@@ -56,7 +56,8 @@ class ApiTeams extends Api
                     $result = Connection::cURLdownload('/2020-21/it.1.clubs.json');
 
                     $this->response->status = 'OK';
-                    $this->response->items = json_decode($result);
+                    $response = json_decode($result);
+                    $this->response->items = $response->clubs;
 
                     echo $this->response->toJson();
                 } catch (\Throwable $th) {
