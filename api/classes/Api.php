@@ -13,14 +13,12 @@ class Api {
         $dbname = 'Sql319510_4';
         $user = 'Sql319510';
         $pass = 'a296210b';
-
-
+        /*
         $host = 'localhost';
         $dbname = 'seriea';
         $user = 'root';
         $pass = 'root';
-
-        $this->response = new ApiResponse();
+        */        
         $json = trim(file_get_contents('php://input'));
         parse_str($json, $input);
 

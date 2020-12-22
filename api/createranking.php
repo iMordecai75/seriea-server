@@ -17,6 +17,7 @@ class ApiCreateRanking extends Api {
         parent::__contruct();
     }
     public function execute() {
+        $this->response = new ApiResponse();
         if (empty($token)) {
             $this->response->status = 'KO';
             $this->response->msg = "Token assente";
@@ -62,5 +63,14 @@ class ApiCreateRanking extends Api {
     }
 }
 
-$ranking = new ApiCreateRanking();
-$ranking->execute();
+try {
+    $ranking = new ApiCreateRanking();
+    $ranking->execute();
+} catch (\Throwable $th) {
+    $response = new ApiResponse();
+    $response->status = 'KO';
+    $esponse->msg = $th->getMessage();
+
+    echo $response->toJson();
+    die();
+}

@@ -20,6 +20,7 @@ class ApiTeams extends Api
 
     public function execute()
     {
+        $this->response = new ApiResponse();
         $user = null;
         if (empty($this->token)) {
             $this->response->status = 'KO';
@@ -75,9 +76,10 @@ try {
     $teams = new ApiTeams();
     $teams->execute();
 } catch (\Throwable $th) {
-    $this->response->status = 'KO';
-    $this->response->msg = $th->getMessage();
+    $response = new ApiResponse();
+    $response->status = 'KO';
+    $esponse->msg = $th->getMessage();
 
-    echo $this->response->toJson();
+    echo $response->toJson();
     die();
 }
