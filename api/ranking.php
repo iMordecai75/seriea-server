@@ -19,11 +19,7 @@ class ApiCreateRanking extends Api {
     public function execute() {
         $this->response = new ApiResponse();
         if (empty($this->token)) {
-            $this->response->status = 'KO';
-            $this->response->msg = "Token assente";
-
-            echo $this->response->toJson();
-            die();
+            $this->method = 'GET';
         } else {
             try {
                 $query = "SELECT User_iId FROM tblUsers WHERE User_sToken = ?";

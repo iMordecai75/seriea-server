@@ -6,6 +6,7 @@ class Api {
     protected $method;
     protected $dbh;
     protected $token;
+    protected $input;
 
     function __contruct() {
         
@@ -20,7 +21,7 @@ class Api {
         $pass = 'root';
               
         $json = trim(file_get_contents('php://input'));
-        parse_str($json, $input);
+        parse_str($json, $this->input);
 
         $this->method = $_SERVER['REQUEST_METHOD'];
 

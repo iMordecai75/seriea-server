@@ -3,7 +3,7 @@
 
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT,DELETE, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 require_once 'classes/Api.php';
@@ -21,22 +21,46 @@ class ApiMatches extends Api
     public function execute()
     {
         $this->response = new ApiResponse();
+        if (empty($this->token)) {
+            if($this->method !== 'GET') {
+                $this->response->msg = "Token assente";
+                $this->method = 'GET';
+            }
+        } else {
+            try {
+                $query = "SELECT User_iId FROM tblUsers WHERE User_sToken = ?";
+                $stmt = $this->dbh->prepare($query);
+                $stmt->execute([$this->token]);
+
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!($user['User_iId'] > 0)) {
+                    $this->response->status = 'KO';
+                    $this->response->msg = "Token errato";
+
+                    echo $this->response->toJson();
+                    exit;
+                }
+            } catch (PDOException $th) {
+                throw $th;
+            }
+        }
+
         switch ($this->method) {
             case 'GET':
                 try {
-                    // Va modificato con una select sul db;
-                    $result = Connection::cURLdownload('/2020-21/it.1.json');
+                    $query = "SELECT Match_iId, Match_sRound, Match_sDate, Match_sTeam1, Match_sTeam2, Match_iGoal1, Match_iGoal2, Match_iState "
+                        . "FROM tblMatches";
+                    $stmt = $this->dbh->prepare($query);
+                    $stmt->execute();
 
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $this->response->status = 'OK';
-                    $response = json_decode($result);
-                    $this->response->items = $response->matches;
+                    $this->response->items = $rows;
 
                     echo $this->response->toJson();
-                } catch (\Throwable $th) {
-                    $this->response->status = 'KO';
-                    $this->response->msg = $th->getMessage();
-
-                    echo $this->response->toJson();
+                    exit;
+                } catch (PDOException $th) {
+                    throw $th;                
                 }
             break;
             case 'POST':
@@ -59,17 +83,35 @@ class ApiMatches extends Api
 
                     echo $this->response->toJson();
                     exit;
-                } catch (\Throwable $th) {
-                    $this->dbh->rollBack();
-                    $this->response->status = 'KO';
-                    $this->response->msg = $th->getMessage();
+                } catch (PDOException $th) {
+                    throw $th;                
+                }
+            break;
+            case 'PATCH':                
+                //Questo metodo servirà per aggiornare il risultato della partita;
+                try {
+                    $query = "UPDATE tblMatches SET Match_iGoal1 = ?, Match_iGoal2 = ? WHERE Match_iId = ?";
+                    if(isset($this->input['data'])) {
+                        $data = json_decode($this->input['data']);
+                        foreach($data as $match) {
+                            $stmt = $this->dbh->prepare($query);
+                            $stmt->execute([$match->Match_iGoal1, $match->Match_iGoal2, $match->Match_iId]);
+                        }
+                    }
+                    $query = "SELECT Match_iId, Match_sRound, Match_sDate, Match_sTeam1, Match_sTeam2, Match_iGoal1, Match_iGoal2, Match_iState "
+                    . "FROM tblMatches";
+                    $stmt = $this->dbh->prepare($query);
+                    $stmt->execute();
+
+                    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    $this->response->status = 'OK';
+                    $this->response->items = $rows;
 
                     echo $this->response->toJson();
                     exit;
+                } catch (PDOException $th) {
+                    throw $th;
                 }
-            break;
-            case 'PATCH':
-                //Questo metodo servirà per inserire il risultato della partita;
             break;
         }
     }
