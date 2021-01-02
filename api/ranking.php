@@ -19,7 +19,10 @@ class ApiCreateRanking extends Api {
     public function execute() {
         $this->response = new ApiResponse();
         if (empty($this->token)) {
-            $this->method = 'GET';
+            if ($this->method !== 'GET') {
+                $this->response->msg = "Token assente";
+                $this->method = 'GET';
+            }
         } else {
             try {
                 $query = "SELECT User_iId FROM tblUsers WHERE User_sToken = ?";
@@ -94,6 +97,7 @@ class ApiCreateRanking extends Api {
                     $stmt->execute();
                     $this->dbh->commit();
                     $this->response->status = 'OK';
+                    $this->response->msg = 'Classifica aggiornata';
 
                     echo $this->response->toJson();
                     exit;

@@ -68,9 +68,13 @@ class ApiMatches extends Api
                     $result = Connection::cURLdownload('/2020-21/it.1.json');
                     $response = json_decode($result);
                     $matches = $response->matches;
+                    
+                    $this->dbh->beginTransaction();
+                    $query = "TRUNCATE tblMatches";
+                    $stmt = $this->dbh->prepare($query);
+                    $stmt->execute();
 
                     $query = "INSERT INTO tblMatches (Match_sRound, Match_sDate, Match_sTeam1, Match_sTeam2, Match_iGoal1, Match_iGoal2, Match_iState) VALUE (?, ?, ?, ?, ?, ?, ?)";
-                    $this->dbh->beginTransaction();
                     foreach($matches as $match) {
                         $stmt = $this->dbh->prepare($query);
                         $goal1 = isset($match->score) ? $match->score->ft[0] : 0;
@@ -90,12 +94,12 @@ class ApiMatches extends Api
             case 'PATCH':                
                 //Questo metodo servirà per aggiornare il risultato della partita;
                 try {
-                    $query = "UPDATE tblMatches SET Match_iGoal1 = ?, Match_iGoal2 = ? WHERE Match_iId = ?";
+                    $query = "UPDATE tblMatches SET Match_iGoal1 = ?, Match_iGoal2 = ?, Match_iState = ? WHERE Match_iId = ?";
                     if(isset($this->input['data'])) {
                         $data = json_decode($this->input['data']);
                         foreach($data as $match) {
                             $stmt = $this->dbh->prepare($query);
-                            $stmt->execute([$match->Match_iGoal1, $match->Match_iGoal2, $match->Match_iId]);
+                            $stmt->execute([$match->Match_iGoal1, $match->Match_iGoal2, $match->Match_iState, $match->Match_iId]);
                         }
                     }
                     $query = "SELECT Match_iId, Match_sRound, Match_sDate, Match_sTeam1, Match_sTeam2, Match_iGoal1, Match_iGoal2, Match_iState "
@@ -123,7 +127,7 @@ try {
 } catch (\Throwable $th) {
     $response = new ApiResponse();
     $response->status = 'KO';
-    $esponse->msg = $th->getMessage();
+    $response->msg = $th->getMessage();
 
     echo $response->toJson();
     die();
