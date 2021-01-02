@@ -27,7 +27,7 @@ class ApiAuth extends Api
 
                 if (isset($username) and isset($password)) {
 
-                    $fields = array('username' => $username, 'password' => $password);
+                    $fields = array('username' => $username, 'password' => $password, 'time' => time());
                     // Create token header as a JSON string
                     $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
                     // Create token payload as a JSON string
